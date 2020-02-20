@@ -17,11 +17,7 @@ server.listen(port, function () {
   console.log('listening on *:' + port);
 });
 
-
-app.get('/', function (req, res) {
-  res.send('<h1>Hello world</h1>');
-});
-
+// Socket authentication 
 io.use(function (socket, next) {
   socket.isAdmin = false;
   if (socket.handshake.query && socket.handshake.query.token) {
@@ -33,8 +29,7 @@ io.use(function (socket, next) {
 })
 
 io.on('connection', function (socket) {
-
-  clients[socket.id] = { nick: "toto" + socket.id, room: "", socket };
+  clients[socket.id] = { room: "", socket };
   console.log(`${Object.keys(clients).length} client(s) connected`)
   console.log("IS ADMIN ? ", socket.isAdmin);
   if (socket.isAdmin) {
@@ -42,17 +37,17 @@ io.on('connection', function (socket) {
   }
 
   socket.on('MESSAGE', function (msg) {
-    console.debug('RECEIVED MESSAGE on ', socket.id, msg);
+    console.debug("--------------------------\nRECEIVED MESSAGE on ", socket.id, msg);
     handleMessages(msg, socket);
   });
 
   socket.on("NOTIFICATION", function (msg) {
-    console.debug("RECEIVED NOTIFICATION on ", socket.id, msg)
+    console.debug("--------------------------\nRECEIVED NOTIFICATION on ", socket.id)
     handleNotifications(msg, socket);
   })
 
   socket.on('disconnect', () => {
-    console.log('DISCO');
+    console.debug('DISCONNECT');
     delete clients[socket.id];
     if (socket.isAdmin) {
       admins = admins.filter(item => item !== socket.id)
@@ -65,9 +60,10 @@ io.on('connection', function (socket) {
 function handleNotifications(notification, socket) {
   switch (notification.type) {
     case 'typing':
+      console.debug(`--> User ${socket.id} is typing : `, notification.payload)
       const roomName = clients[socket.id].room;
       rooms[roomName].members[socket.id].typing = notification.payload;
-      console.log(rooms);
+
       break;
   }
 }
@@ -106,7 +102,7 @@ function handleMessages(message, socket) {
 
 
       const newMessage = { ...message.payload, from };
-      console.log("NEW MESSAGE", newMessage);
+      console.debug("NEW MESSAGE", newMessage);
       rooms[roomName].messages.push(newMessage);
 
       Object.keys(rooms[roomName].members).forEach(socketId => {
@@ -135,18 +131,9 @@ function handleMessages(message, socket) {
 
 }
 
-function ack(socket, messageType, payload) {
-  socket.emit('MESSAGE', {
-    type: 'ACK',
-    sourceType: messageType,
-    sourcePayload: payload
-  });
-}
-
 
 function broadcastNewRoom(roomName) {
   admins.forEach(clientId => {
-    // console.log("notify admin " , room);
     clients[clientId].socket.emit('MESSAGE', { type: 'ROOM_ADD', payload: { name: rooms[roomName].name, messages: rooms[roomName].messages } });
   });
 }
@@ -156,27 +143,4 @@ function broadcastAdminNewMessage(roomName, message) {
     // console.log("notify admin " , room);
     clients[clientId].socket.emit('MESSAGE', { type: 'MESSAGE_ADD', payload: { roomName: roomName, message } });
   });
-}
-function broadcastMembersList(socket, roomName) {
-  console.log(rooms[roomName]);
-  const room = rooms[roomName];
-  if (room.members.length > 1) {
-    room.members.forEach((member) => {
-      clients[member].socket.emit(
-        'MESSAGE',
-        {
-          type: 'MEMBERS_LIST',
-          payload: room.members,
-        }
-      )
-    })
-  }
-
-}
-
-function getMemberNameFromSocket(socketId) {
-  return clients[socketId].name
-}
-function removeClientFromRoom(client) {
-
 }

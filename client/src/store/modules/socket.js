@@ -48,7 +48,7 @@ const actions = {
   sendTextMessage({ commit }, text) {
     _client.emit("MESSAGE", {
       type: "text",
-      payload: { from: "admin", content: text }
+      payload: { from: "client", content: text }
     });
     // commit("ADD_MESSAGE", { from: "me", content: text });
   },

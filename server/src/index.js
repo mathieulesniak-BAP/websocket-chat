@@ -18,13 +18,13 @@ server.listen(port, function () {
 });
 
 
-app.get('/', function(req, res){
+app.get('/', function (req, res) {
   res.send('<h1>Hello world</h1>');
 });
 
-io.use(function(socket, next){
+io.use(function (socket, next) {
   socket.isAdmin = false;
-  if (socket.handshake.query && socket.handshake.query.token){
+  if (socket.handshake.query && socket.handshake.query.token) {
     if (socket.handshake.query.token === 'admintoken') {
       socket.isAdmin = true;
     }
@@ -33,7 +33,7 @@ io.use(function(socket, next){
 })
 
 io.on('connection', function (socket) {
-  
+
   clients[socket.id] = { nick: "toto" + socket.id, room: "", socket };
   console.log(`${Object.keys(clients).length} client(s) connected`)
   console.log("IS ADMIN ? ", socket.isAdmin);
@@ -87,7 +87,7 @@ function handleMessages(message, socket) {
         }
       }
       // FIXME: do not add if already member
-      rooms[roomName].members[socket.id] = {id: socket.id, typing: false};
+      rooms[roomName].members[socket.id] = { id: socket.id, typing: false };
       if (newRoom) {
         broadcastNewRoom(roomName)
       }
@@ -95,44 +95,44 @@ function handleMessages(message, socket) {
     }
       break;
 
-      case 'text':{
+    case 'text': {
 
-        let roomName = clients[socket.id].room;
-        let from = "client";
-        if (socket.isAdmin && message.toRoom !== undefined) {
-          roomName =  message.toRoom;
-          from = "admin";
-        }
-
-        
-        const newMessage = { ...message.payload, from};
-        console.log("NEW MESSAGE", newMessage);
-        rooms[roomName].messages.push(newMessage);
-        
-        Object.keys(rooms[roomName].members).forEach(socketId => {
-          clients[socketId].socket.emit('MESSAGE', {type: 'MESSAGE_ADD', payload: message.payload});
-        });
-        broadcastAdminNewMessage(roomName, newMessage);
+      let roomName = clients[socket.id].room;
+      let from = "client";
+      if (socket.isAdmin && message.toRoom !== undefined) {
+        roomName = message.toRoom;
+        from = "admin";
       }
+
+
+      const newMessage = { ...message.payload, from };
+      console.log("NEW MESSAGE", newMessage);
+      rooms[roomName].messages.push(newMessage);
+
+      Object.keys(rooms[roomName].members).forEach(socketId => {
+        clients[socketId].socket.emit('MESSAGE', { type: 'MESSAGE_ADD', payload: message.payload });
+      });
+      broadcastAdminNewMessage(roomName, newMessage);
+    }
       break;
-    
-      case 'roomsList': {
-        if (socket.isAdmin) {
-          const roomsList =[];
-          Object.keys(rooms).forEach(roomName => {
-            roomsList.push({name: roomName, messages: rooms[roomName].messages});
-          })
-          socket.emit('MESSAGE', {
-            type: 'ROOMS_LIST',
-            payload: { 
-              rooms: roomsList
-            }
-          })
-        }
+
+    case 'roomsList': {
+      if (socket.isAdmin) {
+        const roomsList = [];
+        Object.keys(rooms).forEach(roomName => {
+          roomsList.push({ name: roomName, messages: rooms[roomName].messages });
+        })
+        socket.emit('MESSAGE', {
+          type: 'ROOMS_LIST',
+          payload: {
+            rooms: roomsList
+          }
+        })
       }
-        break;
+    }
+      break;
   }
-  
+
 }
 
 function ack(socket, messageType, payload) {
@@ -147,14 +147,14 @@ function ack(socket, messageType, payload) {
 function broadcastNewRoom(roomName) {
   admins.forEach(clientId => {
     // console.log("notify admin " , room);
-    clients[clientId].socket.emit('MESSAGE', {type: 'ROOM_ADD', payload: { name: rooms[roomName].name, messages: rooms[roomName].messages }});
+    clients[clientId].socket.emit('MESSAGE', { type: 'ROOM_ADD', payload: { name: rooms[roomName].name, messages: rooms[roomName].messages } });
   });
 }
 
 function broadcastAdminNewMessage(roomName, message) {
   admins.forEach(clientId => {
     // console.log("notify admin " , room);
-    clients[clientId].socket.emit('MESSAGE', {type: 'MESSAGE_ADD', payload: { roomName: roomName, message }});
+    clients[clientId].socket.emit('MESSAGE', { type: 'MESSAGE_ADD', payload: { roomName: roomName, message } });
   });
 }
 function broadcastMembersList(socket, roomName) {

@@ -1,14 +1,16 @@
 <template>
   <div>
-    <v-card>
+    <v-card outlined width="50%">
       <v-card-title>Chatroom {{ this.roomName }}</v-card-title>
       <v-card-text>
         <div v-for="message in messages" :key="message.id">
           <Message :message="message" />
         </div>
-        -----
-        <Input :roomName="roomName" />
+        <v-divider></v-divider>
       </v-card-text>
+      <v-card-actions>
+        <Input :roomName="roomName" />
+      </v-card-actions>
     </v-card>
   </div>
 </template>

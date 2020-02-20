@@ -1,11 +1,24 @@
 <template>
   <div>
     <v-navigation-drawer app permanent>
-      <v-list-item v-for="room in rooms" link v-bind:key="room.name">
+      <v-list-item>
         <v-list-item-content>
-          <v-list-item-title class="title" v-on:click="changeRoom(room.name)">
-            ROOM : {{ room.name }}
-          </v-list-item-title>
+          <v-list-item-title class="title">Conversations</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+      <v-list-item
+        v-for="room in rooms"
+        link
+        v-bind:key="room.name"
+        v-on:click="changeRoom(room.name)"
+      >
+        <v-list-item-content>
+          <v-list-item-title
+            class="title"
+            v-bind:class="{bold: room.name === currentRoom}"
+          >ROOM : {{ room.name }} ({{ room.messages.length }})</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </v-navigation-drawer>
@@ -18,6 +31,9 @@
 <style lang="scss" scoped>
 .container {
   margin-left: 300px;
+}
+.bold {
+  font-weight: bold;
 }
 </style>
 <script>

@@ -1,12 +1,14 @@
 <template>
   <form v-on:submit.prevent="sendMessage">
-    Your message :
-    <input
-      type="text"
-      v-model="message"
-      v-on:keydown="onKeyPress"
-      placeholder="Type your message here"
-    />
+    <div>Your message :</div>
+    <div>
+      <input
+        type="text"
+        v-model="message"
+        v-on:keydown="onKeyPress"
+        placeholder="Type your message here"
+      />
+    </div>
   </form>
 </template>
 
@@ -51,4 +53,20 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+form {
+  display: flex;
+  width: 100%;
+
+  div:first-child {
+    width: 33%;
+  }
+  div:last-child {
+    width: 67%;
+
+    input {
+      width: 100%;
+    }
+  }
+}
+</style>

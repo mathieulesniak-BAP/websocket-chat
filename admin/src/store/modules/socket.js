@@ -17,10 +17,9 @@ const mutations = {
     _client = null;
   },
   SET_ROOMS(state, rooms) {
-    console.log("mut setrooms", rooms);
     const newRooms = {};
     rooms.forEach(room => {
-      newRooms[room.name] = { name: room.name, messages: [] };
+      newRooms[room.name] = { name: room.name, messages: room.messages };
     });
     state.rooms = newRooms;
   },

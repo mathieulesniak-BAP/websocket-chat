@@ -57,6 +57,9 @@ export default {
 * {
   box-sizing: border-box;
 }
+body {
+  background: #f0f0f0;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -69,6 +72,7 @@ export default {
   padding: 10px;
   color: #2c3e50;
   margin-top: 60px;
+  background: white;
 }
 
 input {

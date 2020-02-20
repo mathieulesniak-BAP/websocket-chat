@@ -36,26 +36,18 @@ const actions = {
   },
   // eslint-disable-next-line
   socket_connect({ commit, dispatch }, payload) {
-    console.log("RECEIVED CONN EVT");
+    console.log("RECEIVED CONNECT EVENT");
     commit("SET_CONNECTED", true);
     _client = payload.client;
     dispatch("joinRoom");
   },
-  setRoomName({ commit }, name) {
-    commit("SET_ROOM_NAME", name);
+  // Handle received messages
+  socket_MESSAGE({ commit }, { data }) {
+    console.log("CALLED", data[0]);
+    receivedMessageHandler(commit, data[0]);
   },
-  // eslint-disable-next-line
-  sendTextMessage({ commit }, text) {
-    _client.emit("MESSAGE", {
-      type: "text",
-      payload: { from: "client", content: text }
-    });
-    // commit("ADD_MESSAGE", { from: "me", content: text });
-  },
-  // eslint-disable-next-line
-  sendTypingNotification({ commit }, flag) {
-    _client.emit("NOTIFICATION", { type: "typing", payload: flag });
-  },
+
+
   // eslint-disable-next-line
   joinRoom({ state }) {
     if (!_client) {
@@ -63,10 +55,21 @@ const actions = {
     }
     _client.emit("MESSAGE", { type: "join", payload: state.roomName });
   },
-  // Handle received messages
-  socket_MESSAGE({ commit }, { data }) {
-    console.log("CALLED", data[0]);
-    receivedMessageHandler(commit, data[0]);
+  setRoomName({ commit }, name) {
+    commit("SET_ROOM_NAME", name);
+  },
+  // Send text message over socket
+  // eslint-disable-next-line
+  sendTextMessage({ commit }, text) {
+    _client.emit("MESSAGE", {
+      type: "text",
+      payload: { from: "client", content: text }
+    });
+  },
+  // Send user is typing notification over socket
+  // eslint-disable-next-line
+  sendTypingNotification({ commit }, flag) {
+    _client.emit("NOTIFICATION", { type: "typing", payload: flag });
   }
 };
 
@@ -75,11 +78,7 @@ function receivedMessageHandler(commit, message) {
     case "MESSAGE_ADD":
       commit("ADD_MESSAGE", message.payload);
       break;
-    case "ACK":
-      if (message.sourceType === "join") {
-        commit("SET_ROOM", message.sourcePayload);
-      }
-      break;
+
     case "MEMBERS_LIST":
       console.log("RECEIVED MEMBERS_LIST", message);
       commit("SET_ROOM_MEMBERS", message.payload);

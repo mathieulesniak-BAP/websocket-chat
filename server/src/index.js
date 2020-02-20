@@ -106,7 +106,9 @@ function handleMessages(message, socket) {
       rooms[roomName].messages.push(newMessage);
 
       Object.keys(rooms[roomName].members).forEach(socketId => {
-        clients[socketId].socket.emit('MESSAGE', { type: 'MESSAGE_ADD', payload: message.payload });
+        if (clients[socketId] !== undefined) {
+          clients[socketId].socket.emit('MESSAGE', { type: 'MESSAGE_ADD', payload: message.payload });
+        }
       });
       broadcastAdminNewMessage(roomName, newMessage);
     }
